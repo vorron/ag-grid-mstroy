@@ -40,7 +40,6 @@ const onUndo = () => {
 </script>
 
 <template>
-  <pre> {{ JSON.stringify(treeStore.getAll(), null, 2) }}</pre>
   <div class="toolbar">
     <ModeToggler v-model="isEditMode" />
     <HistoryView v-if="isEditMode" :historyManager="historyManager" @redo="onRedo" @undo="onUndo" />

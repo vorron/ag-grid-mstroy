@@ -33,5 +33,6 @@ const emits = defineEmits<{
 .edit-controls button {
   min-width: 32px;
   padding: 6px;
+  border-radius: 100%;
 }
 </style>
