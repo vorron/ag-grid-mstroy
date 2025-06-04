@@ -4,6 +4,7 @@ import TreeGrid from "./components/TreeGrid.vue";
 import TreeStore, { Item } from "./TreeStore";
 import data from "./data";
 import ModeToggler from "./components/ModeToggler.vue";
+import HistoryView from "./components/HistoryView.vue";
 
 const treeStore: Ref<TreeStore> = ref<TreeStore>(new TreeStore(data)) as Ref<TreeStore>;
 const isEditMode = ref(false);
@@ -25,6 +26,7 @@ const handleRemoveClick = (item: Item) => {
   <pre> {{ JSON.stringify(treeStore.getAll(), null, 2) }}</pre>
   <div class="toolbar">
     <ModeToggler v-model="isEditMode" />
+    <HistoryView v-if="isEditMode" />
   </div>
   <TreeGrid
     :treeStore="treeStore"
