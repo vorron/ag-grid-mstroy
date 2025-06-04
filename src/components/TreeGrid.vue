@@ -3,13 +3,25 @@ import { AllCommunityModule, ColDef, ModuleRegistry } from "ag-grid-community";
 import { AllEnterpriseModule } from "ag-grid-enterprise";
 import { AgGridVue } from "ag-grid-vue3";
 import TreeStore, { Item } from "../TreeStore";
+import ButtonCellRenderer from "./ButtonCellRenderer.vue";
 
 ModuleRegistry.registerModules([AllEnterpriseModule]);
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-const { treeStore } = defineProps<{
+const { treeStore, isEditMode, actions } = defineProps<{
   treeStore: TreeStore;
+  isEditMode: boolean;
+  actions: {
+    title: string;
+    exec: (item: Item) => void;
+  }[];
 }>();
+
+const getDataPath = (item: Item) =>
+  treeStore
+    .getAllParents(item.id)
+    .map((e: Item) => e.id.toString())
+    .reverse();
 
 const columnDefs: ColDef[] = [
   {
@@ -40,11 +52,22 @@ const autoGroupColumnDef: ColDef = {
   },
 };
 
-const getDataPath = (item: Item) =>
-  treeStore
-    .getAllParents(item.id)
-    .map((e: Item) => e.id.toString())
-    .reverse();
+const execAction = (title: string, item: Item) => {
+  const action = actions.find((e) => e.title === title);
+  if (action) action.exec(item);
+};
+
+const columnActionDef: ColDef = {
+  headerName: "Actions",
+  cellRenderer: ButtonCellRenderer,
+  cellRendererParams: {
+    onAddClick: (item: Item) => execAction("+", item),
+    onRemoveClick: (item: Item) => execAction("-", item),
+  },
+  sortable: false,
+  filter: false,
+  width: 200,
+};
 </script>
 
 <template>
@@ -52,7 +75,7 @@ const getDataPath = (item: Item) =>
     :rowNumbers="true"
     :style="{ height: '1200px' }"
     :row-data="treeStore.getAll()"
-    :column-defs="columnDefs"
+    :column-defs="isEditMode ? [...columnDefs, columnActionDef] : columnDefs"
     :treeData="true"
     :getDataPath="getDataPath"
     :group-default-expanded="-1"
