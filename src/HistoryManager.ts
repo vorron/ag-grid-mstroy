@@ -1,36 +1,30 @@
-import { Ref } from "vue";
-import TreeStore, { Item } from "./TreeStore";
+import { Item } from "./TreeStore";
 
 export type TreeAction =
   | { type: "add"; item: Item }
   | { type: "remove"; item: Item }
-  | { type: "rename"; id: string; oldValue: string; newValue: string };
+  | { type: "rename"; id: Item["id"]; oldValue: string; newValue: string };
 
 export class HistoryManager {
   private history: TreeAction[] = [];
   private currentIndex = -1;
-  private treeStore: Ref<TreeStore>;
-  private indexer = 0;
 
-  constructor(treeStore: Ref<TreeStore>) {
-    this.treeStore = treeStore;
-    this.indexer = treeStore.value.getAll().reduce((a, c) => (+c.id > a ? +c.id : a), 0);
-  }
+  add?: (item: Item) => void;
+  remove?: (id: Item["id"]) => void;
+  rename?: (id: Item["id"], name: string) => void;
+
+  constructor() {}
 
   private applyAction(action: TreeAction) {
     switch (action.type) {
       case "add":
-        this.treeStore.value.addItem({
-          id: ++this.indexer,
-          label: "Новый элемент",
-          parent: action.item.id,
-        });
+        this.add?.(action.item);
         break;
       case "remove":
-        this.treeStore.value.removeItem(action.item.id);
+        this.remove?.(action.item.id);
         break;
       case "rename":
-        this.treeStore.value.getItem(action.id).label = action.newValue;
+        this.rename?.(action.id, action.newValue);
         break;
     }
   }
@@ -62,13 +56,13 @@ export class HistoryManager {
   private reverseAction(action: TreeAction) {
     switch (action.type) {
       case "add":
-        this.treeStore.value.removeItem(action.item.id);
+        this.remove?.(action.item.id);
         break;
       case "remove":
-        this.treeStore.value.addItem(action.item);
+        this.add?.(action.item);
         break;
       case "rename":
-        this.treeStore.value.getItem(action.id).label = action.oldValue;
+        this.rename?.(action.id, action.oldValue);
         break;
     }
   }

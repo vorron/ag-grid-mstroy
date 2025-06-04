@@ -5,27 +5,30 @@ import TreeStore, { Item } from "./TreeStore";
 import data from "./data";
 import ModeToggler from "./components/ModeToggler.vue";
 import HistoryView from "./components/HistoryView.vue";
+import { HistoryManager } from "./HistoryManager";
 
 const treeStore: Ref<TreeStore> = ref<TreeStore>(new TreeStore(data)) as Ref<TreeStore>;
 const isEditMode = ref(false);
 
+const historyManager = new HistoryManager();
+historyManager.add = (item: Item) => treeStore.value.addItem(item);
+historyManager.remove = (id: Item["id"]) => treeStore.value.removeItem(id);
+historyManager.rename = (id: Item["id"], name: string) => (treeStore.value.getItem(id).label = name);
+
 let indexer = treeStore.value.getAll().reduce((a, c) => (+c.id > a ? +c.id : a), 0);
 
-const handleAddClick = (item: Item) => {
-  treeStore.value.addItem({
-    id: ++indexer,
-    label: "Новый элемент",
-    parent: item.id,
+const handleAddClick = (item: Item) =>
+  historyManager.execute({
+    type: "add",
+    item: {
+      id: ++indexer,
+      label: "Новый элемент",
+      parent: item.id,
+    },
   });
-};
-
-const handleRemoveClick = (item: Item) => {
-  treeStore.value.removeItem(item.id);
-};
-
-const handleRenameClick = (id: Item["id"], name: string) => {
-  treeStore.value.getItem(id).label = name;
-};
+const handleRemoveClick = (item: Item) => historyManager.execute({ type: "remove", item });
+const handleRenameClick = (id: Item["id"], name: string) =>
+  historyManager.execute({ type: "rename", id, newValue: name, oldValue: treeStore.value.getItem(id).label });
 </script>
 
 <template>
