@@ -1,21 +1,23 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { HistoryManager } from "../HistoryManager";
+
+const { historyManager } = defineProps<{
+  historyManager: HistoryManager;
+}>();
 
 const emits = defineEmits<{
   undo: [];
   redo: [];
 }>();
-
-const canUndo = ref(true);
-const canRedo = ref(true);
 </script>
 
 <template>
   <div class="edit-controls">
-    <button @click="emits('undo')" :disabled="!canUndo" title="Отменить">
+    <button @click="emits('undo')" :disabled="!historyManager.canUndo()" title="Отменить">
       <span>↩</span>
     </button>
-    <button @click="emits('undo')" :disabled="!canRedo" title="Повторить">
+    <button @click="emits('redo')" :disabled="!historyManager.canRedo()" title="Повторить">
       <span>↪</span>
     </button>
   </div>
