@@ -3,9 +3,7 @@ const isEditMode = defineModel<boolean>({ required: true });
 </script>
 
 <template>
-  <button @click="() => (isEditMode = !isEditMode)">
-    {{ isEditMode ? "Режим просмотра" : "Режим редактирования" }}
-  </button>
+  <button @click="() => (isEditMode = !isEditMode)">Режим {{ isEditMode ? "редактирования" : "просмотра" }}</button>
 </template>
 
 <style scoped>

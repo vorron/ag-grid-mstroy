@@ -9,15 +9,20 @@ const treeStore: Ref<TreeStore> = ref<TreeStore>(new TreeStore(data)) as Ref<Tre
 const isEditMode = ref(false);
 
 const handleAddClick = (item: Item) => {
-  alert(item.label);
+  treeStore.value.addItem({
+    id: treeStore.value.getAll().reduce((a, c) => (+c.id > a ? +c.id : a), 0) + 1,
+    label: "Новый элемент",
+    parent: item.id,
+  });
 };
 
 const handleRemoveClick = (item: Item) => {
-  alert(item.label);
+  treeStore.value.removeItem(item.id);
 };
 </script>
 
 <template>
+  <pre> {{ JSON.stringify(treeStore.getAll(), null, 2) }}</pre>
   <div class="toolbar">
     <ModeToggler v-model="isEditMode" />
   </div>

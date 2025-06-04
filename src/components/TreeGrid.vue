@@ -39,6 +39,11 @@ const columnDefs: ColDef[] = [
     headerName: "Наименование",
     field: "label",
     width: 150,
+    editable: true,
+    cellEditor: "agTextCellEditor",
+    cellEditorParams: {
+      maxLength: 100,
+    },
   },
 ];
 
@@ -68,6 +73,10 @@ const columnActionDef: ColDef = {
   filter: false,
   width: 200,
 };
+
+const onCellValueChanged = ({ data }: { data: Item }) => {
+  treeStore.getItem(data.id).label = data.label;
+};
 </script>
 
 <template>
@@ -80,5 +89,6 @@ const columnActionDef: ColDef = {
     :getDataPath="getDataPath"
     :group-default-expanded="-1"
     :autoGroupColumnDef="autoGroupColumnDef"
+    @cell-value-changed="onCellValueChanged"
   />
 </template>
