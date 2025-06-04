@@ -93,14 +93,13 @@ export default class TreeStore implements ITreeStore {
       this.items = this.items.filter((i) => i.id !== item.id);
       this.itemsMap.delete(item.id);
 
-      // Удаляем из childrenMap родителя (как было)
       const siblings = this.childrenMap.get(item.parent ?? "null") || [];
       this.childrenMap.set(
         item.parent ?? "null",
         siblings.filter((i) => i.id !== item.id)
       );
 
-      this.childrenMap.delete(item.id); // <- Вот оно!
+      this.childrenMap.delete(item.id);
     }
   }
 
