@@ -9,9 +9,11 @@ import HistoryView from "./components/HistoryView.vue";
 const treeStore: Ref<TreeStore> = ref<TreeStore>(new TreeStore(data)) as Ref<TreeStore>;
 const isEditMode = ref(false);
 
+let indexer = treeStore.value.getAll().reduce((a, c) => (+c.id > a ? +c.id : a), 0);
+
 const handleAddClick = (item: Item) => {
   treeStore.value.addItem({
-    id: treeStore.value.getAll().reduce((a, c) => (+c.id > a ? +c.id : a), 0) + 1,
+    id: ++indexer,
     label: "Новый элемент",
     parent: item.id,
   });
@@ -19,6 +21,10 @@ const handleAddClick = (item: Item) => {
 
 const handleRemoveClick = (item: Item) => {
   treeStore.value.removeItem(item.id);
+};
+
+const handleRenameClick = (id: Item["id"], name: string) => {
+  treeStore.value.getItem(id).label = name;
 };
 </script>
 
@@ -35,6 +41,7 @@ const handleRemoveClick = (item: Item) => {
       { title: '+', exec: handleAddClick },
       { title: '-', exec: handleRemoveClick },
     ]"
+    @rename="handleRenameClick"
   />
 </template>
 

@@ -17,6 +17,10 @@ const { treeStore, isEditMode, actions } = defineProps<{
   }[];
 }>();
 
+const emits = defineEmits<{
+  rename: [id: Item["id"], name: string];
+}>();
+
 const getDataPath = (item: Item) =>
   treeStore
     .getAllParents(item.id)
@@ -39,7 +43,7 @@ const columnDefs: ColDef[] = [
     headerName: "Наименование",
     field: "label",
     width: 150,
-    editable: true,
+    editable: () => isEditMode,
     cellEditor: "agTextCellEditor",
     cellEditorParams: {
       maxLength: 100,
@@ -75,7 +79,7 @@ const columnActionDef: ColDef = {
 };
 
 const onCellValueChanged = ({ data }: { data: Item }) => {
-  treeStore.getItem(data.id).label = data.label;
+  emits("rename", data.id, data.label);
 };
 </script>
 
