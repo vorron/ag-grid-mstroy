@@ -22,7 +22,7 @@ export default class TreeStore implements ITreeStore {
   private allParentsCache = new Map<Item["id"], Item[]>();
 
   constructor(items: Item[]) {
-    for (const item of items) this.addItem(item);
+    for (const item of items) this.addItem(item, true);
   }
 
   private clearCache() {
@@ -84,12 +84,12 @@ export default class TreeStore implements ITreeStore {
     return parents;
   }
 
-  addItem(item: Item): void {
+  addItem(item: Item, loading = false): void {
     if (this.itemsMap.has(item.id)) {
       throw new Error(`Item with id ${item.id} already exists`);
     }
 
-    this.clearCache();
+    if (!loading) this.clearCache();
 
     this.itemsMap.set(item.id, item);
 
