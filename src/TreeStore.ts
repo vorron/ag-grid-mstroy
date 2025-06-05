@@ -65,6 +65,10 @@ export default class TreeStore implements ITreeStore {
   }
 
   getAllParents(id: Item["id"]): Item[] {
+    if (this.allParentsCache.has(id)) {
+      return this.allParentsCache.get(id)!;
+    }
+
     const parents: Item[] = [];
     let currentId: Item["id"] | null = id;
 
@@ -76,6 +80,7 @@ export default class TreeStore implements ITreeStore {
       currentId = item.parent;
     }
 
+    this.allParentsCache.set(id, parents);
     return parents;
   }
 
