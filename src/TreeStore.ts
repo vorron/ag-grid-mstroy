@@ -147,6 +147,5 @@ export default class TreeStore implements ITreeStore {
     }
 
     Object.assign(oldItem, item);
-    this.itemsMap.set(item.id, oldItem);
   }
 }
