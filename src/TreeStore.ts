@@ -16,16 +16,22 @@ export interface ITreeStore {
 }
 
 export default class TreeStore implements ITreeStore {
-  private items: Item[] = [];
   private itemsMap = new Map<Item["id"], Item>();
   private childrenMap = new Map<Item["id"], Item[]>();
+  private allChildrenCache = new Map<Item["id"], Item[]>();
+  private allParentsCache = new Map<Item["id"], Item[]>();
 
   constructor(items: Item[]) {
     for (const item of items) this.addItem(item);
   }
 
+  private clearCache() {
+    this.allChildrenCache.clear();
+    this.allParentsCache.clear();
+  }
+
   getAll(): Item[] {
-    return [...this.items];
+    return Array.from(this.itemsMap.values());
   }
 
   getItem(id: Item["id"]): Item {
@@ -41,6 +47,10 @@ export default class TreeStore implements ITreeStore {
   }
 
   getAllChildren(id: Item["id"]): Item[] {
+    if (this.allChildrenCache.has(id)) {
+      return this.allChildrenCache.get(id)!;
+    }
+
     const allChildren: Item[] = [];
     const children = [...this.getChildren(id)];
 
@@ -50,6 +60,7 @@ export default class TreeStore implements ITreeStore {
       children.push(...this.getChildren(current.id));
     }
 
+    this.allChildrenCache.set(id, allChildren);
     return allChildren;
   }
 
@@ -73,7 +84,8 @@ export default class TreeStore implements ITreeStore {
       throw new Error(`Item with id ${item.id} already exists`);
     }
 
-    this.items.push(item);
+    this.clearCache();
+
     this.itemsMap.set(item.id, item);
 
     if (!this.childrenMap.has(item.parent ?? "null")) {
@@ -85,12 +97,12 @@ export default class TreeStore implements ITreeStore {
   removeItem(id: Item["id"]): void {
     if (!this.itemsMap.has(id)) return;
 
+    this.clearCache();
+
     const itemsToRemove = this.getAllChildren(id);
     itemsToRemove.push(this.getItem(id));
 
     for (const item of itemsToRemove) {
-      // Удаляем из items и itemsMap
-      this.items = this.items.filter((i) => i.id !== item.id);
       this.itemsMap.delete(item.id);
 
       const siblings = this.childrenMap.get(item.parent ?? "null") || [];
@@ -108,9 +120,10 @@ export default class TreeStore implements ITreeStore {
       throw new Error(`Item with id ${item.id} not found`);
     }
 
+    this.clearCache();
+
     const oldItem = this.itemsMap.get(item.id)!;
 
-    // Если изменился parent, нужно обновить childrenMap
     if (oldItem.parent !== item.parent) {
       // Удаляем из старого parent
       const oldParentKey = oldItem.parent ?? "null";
@@ -128,13 +141,7 @@ export default class TreeStore implements ITreeStore {
       this.childrenMap.get(newParentKey)?.push(item);
     }
 
-    // Важно: обновляем сам объект, а не просто заменяем ссылки
     Object.assign(oldItem, item);
-
-    // Обновляем в items массиве
-    const index = this.items.findIndex((i) => i.id === item.id);
-    if (index !== -1) {
-      this.items[index] = oldItem; // Используем обновлённый объект
-    }
+    this.itemsMap.set(item.id, oldItem);
   }
 }
