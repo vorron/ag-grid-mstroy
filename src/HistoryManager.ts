@@ -3,22 +3,22 @@ import { IHistoryManager } from "./interfaces";
 export class HistoryManager<T> implements IHistoryManager<T> {
   private history: T[] = [];
   private currentIndex = -1;
-
-  constructor(private applyAction: (action: T) => void, private reverseAction: (action: T) => void) {}
+  
+  constructor(private onAction: (action: T, reverseMode: boolean) => void) {}
 
   execute(action: T) {
     // Отрезаем "будущее", если делаем новое действие после отката
     this.history = this.history.slice(0, this.currentIndex + 1);
     this.history.push(action);
     this.currentIndex++;
-    this.applyAction(action);
+    this.onAction(action, false);
   }
 
   undo() {
     if (this.currentIndex < 0) return;
 
     const action = this.history[this.currentIndex];
-    this.reverseAction(action);
+    this.onAction(action, true);
     this.currentIndex--;
   }
 
@@ -27,7 +27,7 @@ export class HistoryManager<T> implements IHistoryManager<T> {
 
     this.currentIndex++;
     const action = this.history[this.currentIndex];
-    this.applyAction(action);
+    this.onAction(action, false);
   }
 
   canUndo(): boolean {

@@ -6,10 +6,6 @@ export default class TreeStore implements ITreeStore {
   private allChildrenCache = new Map<Item["id"], Item[]>();
   private allParentsCache = new Map<Item["id"], Item[]>();
 
-  constructor(items: Item[]) {
-    for (const item of items) this.addItem(item, true);
-  }
-
   private clearCache() {
     this.allChildrenCache.clear();
     this.allParentsCache.clear();
