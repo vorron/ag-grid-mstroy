@@ -1,35 +1,13 @@
-import { Item } from "./TreeStore";
 
-export type TreeAction =
-  | { type: "add"; item: Item }
-  | { type: "remove"; item: Item }
-  | { type: "rename"; id: Item["id"]; oldValue: string; newValue: string };
 
-export class HistoryManager {
-  private history: TreeAction[] = [];
+export class HistoryManager<T> {
+  private history: T[] = [];
   private currentIndex = -1;
 
-  add?: (item: Item) => void;
-  remove?: (id: Item["id"]) => void;
-  rename?: (id: Item["id"], name: string) => void;
-
-  constructor() {}
-
-  private applyAction(action: TreeAction) {
-    switch (action.type) {
-      case "add":
-        this.add?.(action.item);
-        break;
-      case "remove":
-        this.remove?.(action.item.id);
-        break;
-      case "rename":
-        this.rename?.(action.id, action.newValue);
-        break;
-    }
+  constructor(private applyAction: (action: T) => void, private reverseAction: (action: T) => void) {
   }
 
-  execute(action: TreeAction) {
+  execute(action: T) {
     // Отрезаем "будущее", если делаем новое действие после отката
     this.history = this.history.slice(0, this.currentIndex + 1);
     this.history.push(action);
@@ -51,20 +29,6 @@ export class HistoryManager {
     this.currentIndex++;
     const action = this.history[this.currentIndex];
     this.applyAction(action);
-  }
-
-  private reverseAction(action: TreeAction) {
-    switch (action.type) {
-      case "add":
-        this.remove?.(action.item.id);
-        break;
-      case "remove":
-        this.add?.(action.item);
-        break;
-      case "rename":
-        this.rename?.(action.id, action.oldValue);
-        break;
-    }
   }
 
   canUndo(): boolean {

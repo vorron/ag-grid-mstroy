@@ -89,6 +89,8 @@ export default class TreeStore implements ITreeStore {
       throw new Error(`Item with id ${item.id} already exists`);
     }
 
+    if (item.id === -1) item.id = this.getAll().reduce((a, c) => (+c.id > a ? +c.id : a), 0) + 1;
+
     if (!loading) this.clearCache();
 
     this.itemsMap.set(item.id, item);

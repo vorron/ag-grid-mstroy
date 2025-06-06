@@ -4,21 +4,19 @@ import { AllEnterpriseModule } from "ag-grid-enterprise";
 import { AgGridVue } from "ag-grid-vue3";
 import TreeStore, { Item } from "../TreeStore";
 import ButtonCellRenderer from "./ButtonCellRenderer.vue";
+import { TreeAction } from "../useAppModel";
 
 ModuleRegistry.registerModules([AllEnterpriseModule]);
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-const { treeStore, isEditMode, actions } = defineProps<{
+const { treeStore, isEditMode } = defineProps<{
   treeStore: TreeStore;
   isEditMode: boolean;
-  actions: {
-    title: string;
-    exec: (item: Item) => void;
-  }[];
 }>();
 
 const emits = defineEmits<{
   rename: [id: Item["id"], name: string];
+  onAction: [action: TreeAction];
 }>();
 
 const getDataPath = (item: Item) =>
@@ -61,25 +59,33 @@ const autoGroupColumnDef: ColDef = {
   },
 };
 
-const execAction = (title: string, item: Item) => {
-  const action = actions.find((e) => e.title === title);
-  if (action) action.exec(item);
-};
-
 const columnActionDef: ColDef = {
   headerName: "Actions",
   cellRenderer: ButtonCellRenderer,
   cellRendererParams: {
-    onAddClick: (item: Item) => execAction("+", item),
-    onRemoveClick: (item: Item) => execAction("-", item),
+    onAddClick: (item: Item) =>
+      emits("onAction", {
+        type: "add",
+        item: {
+          id: -1,
+          label: "Новый элемент",
+          parent: item.id,
+        },
+      }),
+    onRemoveClick: (item: Item) => emits("onAction", { type: "remove", item }),
   },
   sortable: false,
   filter: false,
   width: 200,
 };
 
-const onCellValueChanged = ({ data }: { data: Item }) => {
-  emits("rename", data.id, data.label);
+const onCellValueChanged = (value: { data: Item; oldValue: string }) => {
+  emits("onAction", {
+    type: "rename",
+    id: value.data.id,
+    oldValue: value.oldValue,
+    newValue: value.data.label,
+  });
 };
 </script>
 
