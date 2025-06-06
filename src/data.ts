@@ -1,4 +1,4 @@
-import { Item } from "./TreeStore";
+import { Item } from "./interfaces";
 
 const data: Item[] = [
   { id: 1, parent: null, label: "Айтем 1" },

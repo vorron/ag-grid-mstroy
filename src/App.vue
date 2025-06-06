@@ -1,13 +1,21 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { reactive, ref } from "vue";
 import TreeGrid from "./components/TreeGrid.vue";
 import data from "./data";
 import ModeToggler from "./components/ModeToggler.vue";
 import HistoryView from "./components/HistoryView.vue";
 import ActionPanel from "./components/ActionPanel.vue";
-import useAppModel from "./useAppModel";
+import { HistoryManager } from "./HistoryManager";
+import { IHistoryManager, TreeAction } from "./interfaces";
+import { TreeStoreManager } from "./TreeStoreManager";
 
-const { treeStore, historyManager } = useAppModel(data);
+const treeStoreManager = new TreeStoreManager();
+treeStoreManager.load(data);
+
+const historyManager = reactive<IHistoryManager<TreeAction>>(
+  new HistoryManager((action, reverseMode) => treeStoreManager.applyAction(action, reverseMode))
+);
+
 const isEditMode = ref(false);
 </script>
 
@@ -16,5 +24,9 @@ const isEditMode = ref(false);
     <ModeToggler v-model="isEditMode" />
     <HistoryView v-if="isEditMode" :historyManager="historyManager" />
   </ActionPanel>
-  <TreeGrid :treeStore="treeStore" :isEditMode="isEditMode" @on-action="historyManager.execute($event)" />
+  <TreeGrid
+    :treeStore="treeStoreManager.treeStore"
+    :isEditMode="isEditMode"
+    @on-action="historyManager.execute($event)"
+  />
 </template>

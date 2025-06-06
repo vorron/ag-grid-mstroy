@@ -1,5 +1,4 @@
-import { ref, Ref } from "vue";
-import TreeStore from "./TreeStore";
+import { Reactive } from "vue";
 
 export interface Item {
   id: number | string;
@@ -35,45 +34,9 @@ export interface ITreeStore {
 
 //Дополняет функциональность ITreeStore
 export interface ITreeStoreManager {
-  treeStore: Ref<ITreeStore>;
+  treeStore: Reactive<ITreeStore>;
   load(items: Item[]): void;
   applyAction(action: TreeAction, reverseMode: boolean): void;
-}
-
-export class TreeStoreManager implements ITreeStoreManager {
-  treeStore: Ref<ITreeStore> = ref<ITreeStore>(new TreeStore()) as Ref<ITreeStore>;
-
-  load(items: Item[]) {
-    for (const item of items) this.treeStore.value.addItem(item);
-  }
-
-  applyAction(action: TreeAction, reverseMode = false) {
-    if (!reverseMode) {
-      switch (action.type) {
-        case "add":
-          this.treeStore.value.addItem(action.item);
-          break;
-        case "remove":
-          action.items = this.treeStore.value.removeItem(action.item.id);
-          break;
-        case "rename":
-          this.treeStore.value.getItem(action.id).label = action.newValue;
-          break;
-      }
-    } else {
-      switch (action.type) {
-        case "add":
-          this.treeStore.value.removeItem(action.item.id);
-          break;
-        case "remove":
-          action.items?.forEach((item) => this.treeStore.value.addItem(item));
-          break;
-        case "rename":
-          this.treeStore.value.getItem(action.id).label = action.oldValue;
-          break;
-      }
-    }
-  }
 }
 
 export interface IHistoryManager<T> {

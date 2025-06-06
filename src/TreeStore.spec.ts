@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import TreeStore, { type Item } from "./TreeStore";
+import TreeStore from "./TreeStore";
+import { Item } from "./interfaces";
 
 describe("TreeStore", () => {
   let items: Item[];
@@ -16,7 +17,8 @@ describe("TreeStore", () => {
       { id: 7, parent: 4, label: "Айтем 7" },
       { id: 8, parent: 4, label: "Айтем 8" },
     ];
-    treeStore = new TreeStore(items);
+    treeStore = new TreeStore();
+    for (const item of items) treeStore.addItem(item);
   });
 
   it("getAll() возвращает все элементы", () => {
