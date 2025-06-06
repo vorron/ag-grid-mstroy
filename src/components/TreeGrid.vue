@@ -2,15 +2,15 @@
 import { AllCommunityModule, ColDef, ModuleRegistry } from "ag-grid-community";
 import { AllEnterpriseModule } from "ag-grid-enterprise";
 import { AgGridVue } from "ag-grid-vue3";
-import TreeStore, { Item } from "../TreeStore";
+import { ITreeStore, Item } from "../interfaces";
 import ButtonCellRenderer from "./ButtonCellRenderer.vue";
-import { TreeAction } from "../useAppModel";
+import { TreeAction } from "../interfaces";
 
 ModuleRegistry.registerModules([AllEnterpriseModule]);
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const { treeStore, isEditMode } = defineProps<{
-  treeStore: TreeStore;
+  treeStore: ITreeStore;
   isEditMode: boolean;
 }>();
 

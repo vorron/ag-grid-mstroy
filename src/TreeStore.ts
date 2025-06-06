@@ -1,19 +1,4 @@
-export interface Item {
-  id: number | string;
-  parent: number | string | null;
-  label: string;
-}
-
-export interface ITreeStore {
-  getAll(): Item[];
-  getItem(id: Item["id"]): Item;
-  getChildren(id: Item["id"]): Item[];
-  getAllChildren(id: Item["id"]): Item[];
-  getAllParents(id: Item["id"]): Item[];
-  addItem(item: Item): void;
-  removeItem(id: Item["id"]): void;
-  updateItem(item: Item): void;
-}
+import { ITreeStore, Item } from "./interfaces";
 
 export default class TreeStore implements ITreeStore {
   private itemsMap = new Map<Item["id"], Item>();
@@ -101,8 +86,8 @@ export default class TreeStore implements ITreeStore {
     this.childrenMap.get(item.parent ?? "null")?.push(item);
   }
 
-  removeItem(id: Item["id"]): void {
-    if (!this.itemsMap.has(id)) return;
+  removeItem(id: Item["id"]): Item[] {
+    if (!this.itemsMap.has(id)) return [];
 
     this.clearCache();
 
@@ -120,6 +105,7 @@ export default class TreeStore implements ITreeStore {
 
       this.childrenMap.delete(item.id);
     }
+    return itemsToRemove;
   }
 
   updateItem(item: Item): void {

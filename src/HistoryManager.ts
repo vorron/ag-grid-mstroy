@@ -1,11 +1,10 @@
+import { IHistoryManager } from "./interfaces";
 
-
-export class HistoryManager<T> {
+export class HistoryManager<T> implements IHistoryManager<T> {
   private history: T[] = [];
   private currentIndex = -1;
 
-  constructor(private applyAction: (action: T) => void, private reverseAction: (action: T) => void) {
-  }
+  constructor(private applyAction: (action: T) => void, private reverseAction: (action: T) => void) {}
 
   execute(action: T) {
     // Отрезаем "будущее", если делаем новое действие после отката

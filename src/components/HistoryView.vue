@@ -1,8 +1,8 @@
 <script setup lang="ts" generic="T">
-import { HistoryManager } from "../HistoryManager";
+import { IHistoryManager } from "../interfaces";
 
 const { historyManager } = defineProps<{
-  historyManager: HistoryManager<T>;
+  historyManager: IHistoryManager<T>;
 }>();
 </script>
 
