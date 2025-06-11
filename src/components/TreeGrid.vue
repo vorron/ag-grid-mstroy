@@ -1,87 +1,101 @@
+<template>
+  <q-card flat bordered>
+    <ag-grid-vue
+      class="ag-theme-quartz"
+      :style="{ height: 'calc(100vh - 150px)', width: '100%' }"
+      :rowData="treeStore.getAll()"
+      :columnDefs="computedColumnDefs"
+      :treeData="true"
+      :getDataPath="getDataPath"
+      :groupDefaultExpanded="-1"
+      :autoGroupColumnDef="autoGroupColumnDef"
+      @cell-value-changed="onCellValueChanged"
+    />
+  </q-card>
+</template>
+
 <script setup lang="ts">
-import { AllCommunityModule, ColDef, ModuleRegistry } from "ag-grid-community";
-import { AllEnterpriseModule } from "ag-grid-enterprise";
-import { AgGridVue } from "ag-grid-vue3";
-import { ITreeStore, Item } from "../interfaces";
-import ButtonCellRenderer from "./ButtonCellRenderer.vue";
-import { TreeAction } from "../interfaces";
+import type { ColDef } from 'ag-grid-community';
+import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
+import { AllEnterpriseModule } from 'ag-grid-enterprise';
+import { AgGridVue } from 'ag-grid-vue3';
+import type { TreeAction } from '../interfaces/TreeAction';
+import type { ITreeStore } from 'src/interfaces/ITreeStore';
+import type { Item } from 'src/interfaces/Item';
+import ButtonCellRenderer from './ButtonCellRenderer.vue';
+import { computed } from 'vue';
 
-ModuleRegistry.registerModules([AllEnterpriseModule]);
-ModuleRegistry.registerModules([AllCommunityModule]);
+ModuleRegistry.registerModules([AllEnterpriseModule, AllCommunityModule]);
 
-const { treeStore, isEditMode } = defineProps<{
+const props = defineProps<{
   treeStore: ITreeStore;
   isEditMode: boolean;
 }>();
 
-const emits = defineEmits<{
-  rename: [id: Item["id"], name: string];
-  onAction: [action: TreeAction];
+const emit = defineEmits<{
+  (e: 'on-action', action: TreeAction): void;
 }>();
 
 const getDataPath = (item: Item) =>
-  treeStore
+  props.treeStore
     .getAllParents(item.id)
     .map((e: Item) => e.id.toString())
     .reverse();
 
-const columnDefs: ColDef[] = [
+const baseColumnDefs: ColDef[] = [
   {
-    headerName: "№ п\\п",
-    valueGetter: (params: any) => {
-      return params.node.rowIndex + 1;
-    },
+    headerName: '№ п/п',
+    valueGetter: (params: unknown) => (params as { node: { rowIndex: number } }).node.rowIndex + 1,
     width: 100,
-    pinned: "left",
+    pinned: 'left',
     sortable: false,
     filter: false,
-    cellClass: "row-number-cell",
+    cellClass: 'row-number-cell',
   },
   {
-    headerName: "Наименование",
-    field: "label",
-    width: 150,
-    editable: () => isEditMode,
-    cellEditor: "agTextCellEditor",
-    cellEditorParams: {
-      maxLength: 100,
-    },
+    headerName: 'Наименование',
+    field: 'label',
+    flex: 1,
+    editable: () => props.isEditMode,
+    cellEditor: 'agTextCellEditor',
+    cellEditorParams: { maxLength: 100 },
   },
 ];
 
 const autoGroupColumnDef: ColDef = {
-  headerName: "Категория",
-  cellRendererParams: {
-    suppressCount: true,
-  },
-  valueGetter: (params: any) => {
-    return params.node.allChildrenCount === null ? "Элемент" : "Группа";
+  headerName: 'Категория',
+  width: 400,
+  cellRendererParams: { suppressCount: true },
+  valueGetter: (params: unknown) => {
+    return (params as { node: { allChildrenCount: null | number } }).node.allChildrenCount === null
+      ? 'Элемент'
+      : 'Группа';
   },
 };
 
 const columnActionDef: ColDef = {
-  headerName: "Actions",
+  headerName: 'Действия',
   cellRenderer: ButtonCellRenderer,
   cellRendererParams: {
     onAddClick: (item: Item) =>
-      emits("onAction", {
-        type: "add",
-        item: {
-          id: -1,
-          label: "Новый элемент",
-          parent: item.id,
-        },
+      emit('on-action', {
+        type: 'add',
+        item: { id: -1, label: 'Новый элемент', parent: item.id },
       }),
-    onRemoveClick: (item: Item) => emits("onAction", { type: "remove", item }),
+    onRemoveClick: (item: Item) => emit('on-action', { type: 'remove', item }),
   },
   sortable: false,
   filter: false,
-  width: 200,
+  width: 150,
 };
 
+const computedColumnDefs = computed(() =>
+  props.isEditMode ? [...baseColumnDefs, columnActionDef] : baseColumnDefs,
+);
+
 const onCellValueChanged = (value: { data: Item; oldValue: string }) => {
-  emits("onAction", {
-    type: "rename",
+  emit('on-action', {
+    type: 'rename',
     id: value.data.id,
     oldValue: value.oldValue,
     newValue: value.data.label,
@@ -89,16 +103,15 @@ const onCellValueChanged = (value: { data: Item; oldValue: string }) => {
 };
 </script>
 
-<template>
-  <ag-grid-vue
-    :rowNumbers="true"
-    :style="{ height: '1200px' }"
-    :row-data="treeStore.getAll()"
-    :column-defs="isEditMode ? [...columnDefs, columnActionDef] : columnDefs"
-    :treeData="true"
-    :getDataPath="getDataPath"
-    :group-default-expanded="-1"
-    :autoGroupColumnDef="autoGroupColumnDef"
-    @cell-value-changed="onCellValueChanged"
-  />
-</template>
+<style lang="scss">
+.ag-theme-quartz {
+  --ag-grid-size: 8px;
+  --ag-list-item-height: 36px;
+  --ag-font-size: 14px;
+
+  .row-number-cell {
+    background-color: #f5f5f5;
+    font-weight: bold;
+  }
+}
+</style>
