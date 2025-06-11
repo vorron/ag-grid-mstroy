@@ -1,17 +1,28 @@
-<script setup lang="ts" generic="T">
-import { IHistoryManager } from "../interfaces";
+<script setup lang="ts">
+import { Ref } from "vue";
+import { ActionStatus } from "../TreeStoreManager";
 
-const { historyManager } = defineProps<{
-  historyManager: IHistoryManager<T>;
+const { status } = defineProps<{
+  status: Ref<ActionStatus>;
 }>();
+
+const emits = defineEmits(["undo", "redo"]);
 </script>
 
 <template>
   <div class="edit-controls">
-    <button @click="historyManager.undo" :disabled="!historyManager.canUndo()" title="Отменить">
+    <button
+      @click="emits('undo')"
+      :disabled="status.value !== 'CAN_UNDO' && status.value !== 'CAN_UNDO&REDO'"
+      title="Отменить"
+    >
       <span>↩</span>
     </button>
-    <button @click="historyManager.redo" :disabled="!historyManager.canRedo()" title="Повторить">
+    <button
+      @click="emits('redo')"
+      :disabled="status.value !== 'CAN_REDO' && status.value !== 'CAN_UNDO&REDO'"
+      title="Повторить"
+    >
       <span>↪</span>
     </button>
   </div>

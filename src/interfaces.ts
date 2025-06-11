@@ -1,4 +1,5 @@
-import { Reactive } from "vue";
+import { Reactive, Ref } from "vue";
+import { ActionStatus } from "./TreeStoreManager";
 
 export interface Item {
   id: number | string;
@@ -36,15 +37,10 @@ export interface ITreeStore {
 export interface ITreeStoreManager {
   treeStore: Reactive<ITreeStore>;
   load(items: Item[]): void;
-  applyAction(action: TreeAction, reverseMode: boolean): void;
-}
-
-export interface IHistoryManager<T> {
-  execute(action: T): void;
-  undo(): void;
-  redo(): void;
-  canUndo(): boolean;
-  canRedo(): boolean;
+  actionStatus: Ref<ActionStatus>;
+  addAction(action: TreeAction): void;
+  redoAction(): void;
+  undoAction(): void;
 }
 
 export type TreeAction =
